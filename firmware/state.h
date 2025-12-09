@@ -6,8 +6,10 @@
 struct State {
   uint8_t open: 1;
   uint8_t sensing: 2;
-  uint8_t imp_fun: 1;
-  uint8_t imp_inp: 1;
+  unsigned long imp_fun;
+  unsigned long imp_inp;
+  unsigned long last_imp_fun;
+  unsigned long last_imp_inp;
   uint8_t remote_alert: 1;
   uint8_t remote_close: 1;
 } state;
@@ -37,7 +39,9 @@ void setRemoteClose(uint8_t value) {
 }
 
 void dumpState(){
-  io->debug("State: open=%d, sensing=%d, imp_fun=%d, imp_inp=%d, remote_alert=%d, remote_close=%d",
-            state.open, state.sensing, state.imp_fun, state.imp_inp,
+  io->output("State: open=%d, sensing=%d, imp_fun=%lu, last_imp_fun=%lu, imp_inp=%lu, last_imp_inp=%lu, remote_alert=%d, remote_close=%d",
+            state.open, state.sensing,
+            state.imp_fun, (t > state.last_imp_fun) ? t - state.last_imp_fun : t,
+            state.imp_inp, (t > state.last_imp_inp) ? t - state.last_imp_inp : t,
             state.remote_alert, state.remote_close);
   }

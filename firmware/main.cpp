@@ -1,4 +1,5 @@
 #include <Arduino.h>
+unsigned long t;
 #include "PinChangeInterrupt.h"
 #include "config.h"
 #include "state.h"
@@ -14,7 +15,7 @@ manual_changed,
 inp_tick,
 fun_tick;
 
-unsigned long t, rct;
+unsigned long rct, inp_tick_prev=0, fun_tick_prev=0;
 
 
 void onSensingChanged() {
@@ -92,10 +93,10 @@ void processInputTick() {
   if (inp_tick.value) {
     digitalWrite(OP_INP, !digitalRead(OP_INP));
     inp_tick.value = 0;
-    if (state.imp_inp < inp_tick.t)
-        state.imp_inp = inp_tick.t - state.imp_inp;
-    else
-        state.imp_inp = inp_tick.t;
+    state.imp_inp = (inp_tick.t > inp_tick_prev)? inp_tick.t - inp_tick_prev : inp_tick.t;
+    io->debug("INPUT_TICK=%lu;STATE_IMP_INP=%lu", inp_tick.t, state.imp_inp);
+    inp_tick_prev = inp_tick.t;
+    state.last_imp_inp = inp_tick.t;
   }
 }
 
@@ -103,10 +104,10 @@ void processFunTick() {
   if (fun_tick.value) {
     digitalWrite(OP_FUN, !digitalRead(OP_FUN));
     fun_tick.value = 0;
-    if (state.imp_fun < fun_tick.t)
-        state.imp_fun = fun_tick.t - state.imp_fun;
-    else
-        state.imp_fun = fun_tick.t;
+    state.imp_fun = ( fun_tick.t > fun_tick_prev) ? fun_tick.t - fun_tick_prev : fun_tick.t;
+    io->debug("FUNCTION_TICK=%lu;STATE_IMP_FUN=%lu", fun_tick.t, state.imp_fun);
+    fun_tick_prev = fun_tick.t;
+    state.last_imp_fun = fun_tick.t;
   }
 }
 
